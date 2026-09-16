@@ -452,7 +452,7 @@ ipcMain.on('window:maximize', () => {
 });
 
 // ── 🌐 CLOUD AUTO-UPDATER & VERSION CONTROL ─────────────────────────────
-const DEFAULT_UPDATE_GIST = 'https://gist.githubusercontent.com/iamytmanager/df3b587b65e1450b3a44d29bbd971251/raw/app_status.json';
+const DEFAULT_UPDATE_GIST = 'https://gist.githubusercontent.com/iamytmanager/eda7ae4b4d4dff07788725d60b0d9188/raw/app_status.json';
 
 ipcMain.handle('app:get-version', async () => {
   return app.getVersion();
@@ -478,8 +478,19 @@ ipcMain.handle('app:check-update', async (event, customGistUrl) => {
       ? `${gistUrl}&t=${Date.now()}` 
       : `${gistUrl}?t=${Date.now()}`;
 
-    const res = await axios.get(urlWithCacheBuster, { timeout: 8000 });
-    const remote = res.data || {};
+    const res = await axios.get(urlWithCacheBuster, {
+      timeout: 8000,
+      transformResponse: [(data) => {
+        try {
+          if (typeof data === 'string') return JSON.parse(data.replace(/^\uFEFF/, '').trim());
+        } catch (e) {}
+        return data;
+      }]
+    });
+    let remote = res.data || {};
+    if (typeof remote === 'string') {
+      try { remote = JSON.parse(remote.replace(/^\uFEFF/, '').trim()); } catch (e) {}
+    }
 
     const latestVer = String(remote.latest_version || remote.version || '2.0.0').replace(/^v/i, '').trim();
     const currentVer = String(app.getVersion() || '2.0.0').replace(/^v/i, '').trim();
