@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StreamXpert 2.0 Pro Studio</title>
+  <link rel="icon" type="image/png" href="assets/icon-64.png">
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+
+  <!-- Ambient Radial Glows in Background -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- 1. Pro Window Titlebar (Frameless Header) -->
+  <header class="titlebar">
+    <div class="titlebar-brand">
+      <img src="assets/icon-64.png" alt="StreamXpert" style="width: 26px; height: 26px; border-radius: 6px; box-shadow: 0 0 10px var(--accent-glow); object-fit: cover;">
+      <div>
+        <span class="titlebar-title">StreamXpert Studio</span>
+        <span class="pro-badge">v2.0 PRO</span>
+      </div>
+    </div>
+
+    <!-- Center HUD Status & Animated Equalizer Waves -->
+    <div class="titlebar-hud">
+      <div class="status-indicator-pill standby" id="status-pill-hud">
+        <div class="soundwave">
+          <div class="soundwave-bar"></div>
+          <div class="soundwave-bar"></div>
+          <div class="soundwave-bar"></div>
+          <div class="soundwave-bar"></div>
+        </div>
+        <span id="status-text-hud">STANDBY</span>
+      </div>
+    </div>
+
+    <!-- Titlebar Right: System Metrics & Custom Window Controls -->
+    <div class="titlebar-actions">
+      <!-- Theme Switcher -->
+      <div class="hud-chip" style="padding: 3px 8px; border-color: rgba(255, 255, 255, 0.12);" title="Select Studio Theme Palette">
+        <span style="font-size: 0.76rem;">🎨</span>
+        <select id="theme-selector" style="background: transparent; border: none; color: #fff; font-size: 0.72rem; font-weight: 700; outline: none; cursor: pointer;">
+          <option value="mint" selected style="background: #0b0e14; color: #00f2a9;">🟢 Matrix Mint (Pro)</option>
+          <option value="azure" style="background: #090d16; color: #38bdf8;">🔵 Electric Azure</option>
+          <option value="violet" style="background: #0c0916; color: #a855f7;">🟣 Cyber Violet</option>
+          <option value="amber" style="background: #0e0a07; color: #f59e0b;">🟠 Solar Amber</option>
+          <option value="stealth" style="background: #0a0a0c; color: #ffffff;">⚪ Stealth Titanium</option>
+        </select>
+      </div>
+
+      <div class="hud-chip" id="hud-rdp-chip" style="cursor: pointer; border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.1);" title="Click to toggle RDP Eco Performance Mode (0% GPU/CPU)">
+        <span style="color: #f59e0b;">⚡</span>
+        <span style="color: #fbbf24; font-weight: 700;" id="rdp-status-txt">RDP ECO: ON</span>
+      </div>
+      <div class="hud-chip">
+        <span>CPU:</span>
+        <span class="val" id="stat-cpu">0%</span>
+      </div>
+      <div class="hud-chip">
+        <span>RAM:</span>
+        <span class="val" id="stat-ram">0%</span>
+      </div>
+      <div class="hud-chip">
+        <span>Active:</span>
+        <span class="val" id="stat-active">0</span>
+      </div>
+
+      <!-- Window Action Buttons -->
+      <div class="window-controls">
+        <button class="win-btn" id="win-min" title="Minimize">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+        <button class="win-btn" id="win-max" title="Maximize">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+        </button>
+        <button class="win-btn close" id="win-close" title="Close">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. Application Body: Sidebar + Main Stage -->
+  <div class="app-container">
+
+    <!-- Left Modern Sidebar Rail -->
+    <aside class="sidebar">
+      <div class="sidebar-nav">
+        <div class="nav-item active" data-tab="tab-studio">
+          <svg viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          <span>Live Studio</span>
+        </div>
+        <div class="nav-item" data-tab="tab-multicast">
+          <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          <span>Multi-Stream</span>
+        </div>
+        <div class="nav-item" data-tab="tab-scheduler">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Automation</span>
+        </div>
+        <div class="nav-item" data-tab="tab-settings">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Preferences</span>
+        </div>
+      </div>
+
+      <!-- User Profile Badge -->
+      <div class="sidebar-user">
+        <div class="user-avatar">SJ</div>
+        <div class="user-info">
+          <span class="user-name">Shahzaib Jutt</span>
+          <span class="user-status">
+            <span class="user-status-dot"></span> Studio Owner
+          </span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 3. Stage Content Area -->
+    <main class="stage">
+
+      <!-- TAB 1: LIVE STUDIO -->
+      <div class="tab-view active" id="tab-studio">
+        <!-- Deck Left: Video, Broadcast Targets, Encoder -->
+        <div class="deck-left">
+          
+          <!-- Source Video Selector Card -->
+          <div class="pro-card">
+            <div class="card-header-flex">
+              <span class="card-title-text">
+                <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                Source Video File
+              </span>
+              <span class="pro-badge" id="file-badge">Required</span>
+            </div>
+
+            <!-- Drag & Drop Dropzone -->
+            <div class="cyber-dropzone" id="video-dropzone">
+              <div class="dropzone-radar-icon">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <div class="dropzone-main-text">Drag & Drop Video or Click to Browse</div>
+              <div class="dropzone-sub-text">Supported: MP4, MKV, FLV, MOV, TS, WEBM, AVI (Infinite 24/7 Loop Ready)</div>
+            </div>
+
+            <!-- Selected File Card (Reveals upon selection) -->
+            <div class="video-file-card" id="file-card" style="display: none;">
+              <div class="vfc-info">
+                <div class="vfc-icon">
+                  <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+                <div class="vfc-meta">
+                  <span class="vfc-name" id="file-name-txt">sample.mp4</span>
+                  <span class="vfc-details" id="file-details-txt">0.00 MB &bull; Ready for Broadcast</span>
+                </div>
+              </div>
+              <button class="btn-dismiss" id="btn-remove-file" title="Remove Video">✕</button>
+            </div>
+          </div>
+
+          <!-- Broadcast Destination Matrix -->
+          <div class="pro-card">
+            <div class="card-header-flex">
+              <span class="card-title-text">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                Multi-Cast RTMP Targets
+              </span>
+              <span class="pro-badge" style="color: #6ee7b7; border-color: rgba(110, 231, 183, 0.3);">Simultaneous</span>
+            </div>
+
+            <div class="destination-stack">
+              <!-- TikTok Live (Working) -->
+              <div class="dest-row active-tt" id="row-tt">
+                <div class="dest-header">
+                  <div class="dest-title-group">
+                    <div class="dest-tag tag-tt">TT</div>
+                    <span class="dest-name">TikTok Live (Official RTMP)</span>
+                  </div>
+                  <label class="pro-switch">
+                    <input type="checkbox" id="enable-tt" checked>
+                    <span class="pro-slider"></span>
+                  </label>
+                </div>
+                <div class="cyber-input-wrapper" style="margin-bottom: 6px;">
+                  <input type="text" class="cyber-input" id="server-tt" placeholder="TikTok RTMP Server URL" value="rtmp://live-push.tiktok-live.com/live/">
+                </div>
+                <div class="cyber-input-wrapper">
+                  <input type="password" class="cyber-input" id="key-tt" placeholder="Paste your TikTok Stream Key here...">
+                </div>
+              </div>
+
+              <!-- YouTube Live -->
+              <div class="dest-row active-yt" id="row-yt">
+                <div class="dest-header">
+                  <div class="dest-title-group">
+                    <div class="dest-tag tag-yt">YT</div>
+                    <span class="dest-name">YouTube Live</span>
+                  </div>
+                  <label class="pro-switch">
+                    <input type="checkbox" id="enable-yt" checked>
+                    <span class="pro-slider"></span>
+                  </label>
+                </div>
+                <div class="cyber-input-wrapper">
+                  <input type="password" class="cyber-input" id="key-yt" placeholder="Enter YouTube Stream Key (e.g. xxxx-xxxx-xxxx-xxxx)">
+                </div>
+              </div>
+
+              <!-- Facebook Live -->
+              <div class="dest-row" id="row-fb">
+                <div class="dest-header">
+                  <div class="dest-title-group">
+                    <div class="dest-tag tag-fb">FB</div>
+                    <span class="dest-name">Facebook Live</span>
+                  </div>
+                  <label class="pro-switch">
+                    <input type="checkbox" id="enable-fb">
+                    <span class="pro-slider"></span>
+                  </label>
+                </div>
+                <div class="cyber-input-wrapper">
+                  <input type="password" class="cyber-input" id="key-fb" placeholder="Enter Facebook Stream Key (FB-xxxxxxxxxxxx)">
+                </div>
+              </div>
+
+              <!-- Custom RTMP / Twitch / Kick -->
+              <div class="dest-row" id="row-custom">
+                <div class="dest-header">
+                  <div class="dest-title-group">
+                    <div class="dest-tag tag-custom">RTMP</div>
+                    <span class="dest-name">Custom RTMP / Twitch / Kick</span>
+                  </div>
+                  <label class="pro-switch">
+                    <input type="checkbox" id="enable-custom">
+                    <span class="pro-slider"></span>
+                  </label>
+                </div>
+                <div class="cyber-input-wrapper">
+                  <input type="text" class="cyber-input" id="url-custom" placeholder="Full RTMP / RTMPS URL with key">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Studio Encoder Parameters -->
+          <div class="pro-card">
+            <div class="card-header-flex">
+              <span class="card-title-text">
+                <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Hardware & Video Encoding Engine
+              </span>
+            </div>
+
+            <div class="encoder-grid">
+              <div class="encoder-item" style="grid-column: span 2;">
+                <label class="encoder-label" style="display: flex; justify-content: space-between;">
+                  <span>CPU Performance Engine</span>
+                  <span style="color: #6ee7b7; font-weight: 800;">⚡ Recommended for 4-Core RDP</span>
+                </label>
+                <select class="cyber-input" id="cfg-stream-mode" style="border-color: rgba(110, 231, 183, 0.4); background: rgba(16, 185, 129, 0.08); font-weight: 700; color: #fff;">
+                  <option value="copy" selected>🚀 Passthrough Stream Copy (~0% CPU - Run 15+ Streams on RDP)</option>
+                  <option value="eco">⚡ Eco Re-encode (1-Thread limit, Ultrafast - Low CPU)</option>
+                  <option value="reencode">🎬 Full Software Re-encode (Custom Bitrate & Quality)</option>
+                </select>
+              </div>
+
+              <div class="encoder-item">
+                <label class="encoder-label">Video Bitrate</label>
+                <select class="cyber-input" id="cfg-bitrate">
+                  <option value="2500k">2500 kbps (Stable 720p / 1080p)</option>
+                  <option value="4000k" selected>4000 kbps (High Fidelity 1080p)</option>
+                  <option value="6000k">6000 kbps (Pro 1080p 60FPS)</option>
+                  <option value="8000k">8000 kbps (Broadcast Studio Ultra)</option>
+                </select>
+              </div>
+
+              <div class="encoder-item">
+                <label class="encoder-label">Aspect Ratio & Scaling</label>
+                <select class="cyber-input" id="cfg-resolution">
+                  <option value="original" selected>Original Video Aspect Ratio</option>
+                  <option value="portrait-1080x1920">TikTok Portrait 9:16 (1080x1920 HD)</option>
+                  <option value="portrait-720x1280">TikTok Portrait 9:16 (720x1280)</option>
+                  <option value="1080p">Landscape 16:9 (1920x1080 Full HD)</option>
+                  <option value="720p">Landscape 16:9 (1280x720 HD)</option>
+                </select>
+              </div>
+
+              <div class="encoder-item">
+                <label class="encoder-label">Encoder Preset (CPU Load)</label>
+                <select class="cyber-input" id="cfg-preset">
+                  <option value="ultrafast">Ultrafast (Minimal CPU usage)</option>
+                  <option value="superfast">Superfast</option>
+                  <option value="veryfast" selected>Veryfast (Recommended Balance)</option>
+                  <option value="faster">Faster</option>
+                  <option value="fast">Fast (Higher Picture Quality)</option>
+                </select>
+              </div>
+
+              <div class="encoder-item">
+                <label class="encoder-label">Frame Rate (FPS)</label>
+                <select class="cyber-input" id="cfg-fps">
+                  <option value="30" selected>30 FPS (Standard Stream)</option>
+                  <option value="60">60 FPS (Ultra Smooth Motion)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Deck Right: Broadcast Master HUD, Telemetry & Real-Time Console -->
+        <div class="deck-right">
+
+          <!-- Master Live Telemetry Card -->
+          <div class="pro-card">
+            <div class="card-header-flex">
+              <span class="card-title-text">
+                <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                Broadcast Telemetry
+              </span>
+              <span class="pro-badge" id="health-badge" style="color: #6ee7b7; border-color: rgba(110,231,183,0.3);">100% HEALTH</span>
+            </div>
+
+            <!-- Digital Studio Broadcast Timer -->
+            <div class="timer-hero-box">
+              <div>
+                <div style="font-size: 0.72rem; font-weight: 700; color: #a5b4fc; text-transform: uppercase;">AIR TIME DURATION</div>
+                <div class="timer-digits" id="metric-duration">00:00:00</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 0.72rem; font-weight: 700; color: #a5b4fc; text-transform: uppercase;">STATUS</div>
+                <div style="font-size: 0.92rem; font-weight: 800; color: #fff;" id="status-live-tag">STANDBY</div>
+              </div>
+            </div>
+
+            <!-- 6-Grid Telemetry Gauges -->
+            <div class="telemetry-deck">
+              <div class="gauge-card">
+                <div class="gauge-label">Live Bitrate</div>
+                <div class="gauge-value" id="metric-bitrate">0 kbps</div>
+              </div>
+              <div class="gauge-card">
+                <div class="gauge-label">Live FPS</div>
+                <div class="gauge-value" id="metric-fps">0.0</div>
+              </div>
+              <div class="gauge-card">
+                <div class="gauge-label">Speed Factor</div>
+                <div class="gauge-value" id="metric-speed">1.0x</div>
+              </div>
+              <div class="gauge-card">
+                <div class="gauge-label">Total Frames</div>
+                <div class="gauge-value" id="metric-frames">0</div>
+              </div>
+              <div class="gauge-card">
+                <div class="gauge-label">Dropped Frames</div>
+                <div class="gauge-value" id="metric-drops" style="color: #10b981;">0</div>
+              </div>
+              <div class="gauge-card">
+                <div class="gauge-label">Buffer Health</div>
+                <div class="gauge-value" style="color: #38bdf8;">Optimal</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Cyber Terminal Console -->
+          <div class="pro-card" style="flex: 1; display: flex; flex-direction: column; padding: 14px;">
+            <div class="terminal-shell">
+              <div class="terminal-top">
+                <div class="terminal-tab-title">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                  <span>LIVE BROADCAST LOG ENGINE</span>
+                </div>
+                <div class="terminal-btn-group">
+                  <button class="btn-term-action" id="btn-copy-log">Copy</button>
+                  <button class="btn-term-action" id="btn-clear-log">Clear</button>
+                </div>
+              </div>
+              <div class="terminal-body" id="log-terminal">StreamXpert 2.0 Studio ready.
+Waiting for broadcast session launch...</div>
+            </div>
+          </div>
+
+          <!-- Giant Master Control Buttons -->
+          <div class="master-controls">
+            <button class="btn-golive" id="btn-start-stream">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>START LIVE BROADCAST</span>
+            </button>
+            <button class="btn-stoplive" id="btn-stop-stream" disabled>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+              <span>STOP STREAM</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TAB 2: MULTI-STREAM CHANNELS -->
+      <div class="tab-view" id="tab-multicast">
+        <div style="width: 100%; display: flex; flex-direction: column; gap: 16px;">
+          <div class="pro-card">
+            <div class="card-header-flex">
+              <div>
+                <span class="card-title-text" style="font-size: 1.1rem;">Parallel Multi-Channel Broadcasting</span>
+                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+                  Broadcast multiple different video sources to completely independent platforms simultaneously.
+                </div>
+              </div>
+              <button class="btn-golive" id="btn-add-multi-channel" style="flex: initial; padding: 10px 20px; font-size: 0.85rem;">
+                + Add New Channel
+              </button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 14px;" id="multi-stream-container">
+              <!-- Dynamic Channel Rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: SCHEDULER AUTOMATION -->
+      <div class="tab-view" id="tab-scheduler">
+        <div style="width: 100%; max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+          <div class="pro-card">
+            <div class="card-header-flex">
+              <span class="card-title-text" style="font-size: 1.1rem;">Automated Broadcast Scheduler</span>
+              <span class="pro-badge" id="schedule-badge">Standby</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 8px;">
+              <div class="encoder-item">
+                <label class="encoder-label">Select Target Date & Time</label>
+                <input type="datetime-local" class="cyber-input" id="schedule-datetime">
+              </div>
+
+              <!-- Hero Countdown Display -->
+              <div class="schedule-hero" id="countdown-container" style="display: none;">
+                <div style="font-size: 0.8rem; font-weight: 800; color: #a5b4fc; letter-spacing: 0.1em;">TIME REMAINING TO GO LIVE</div>
+                <div class="big-countdown" id="countdown-display">00:00:00</div>
+                <div style="font-size: 0.82rem; color: #fff;" id="schedule-target-text">Auto-Start Programmed</div>
+              </div>
+
+              <div style="display: flex; gap: 12px;">
+                <button class="btn-golive" id="btn-set-schedule" style="flex: 1;">
+                  Activate Scheduled Stream
+                </button>
+                <button class="btn-stoplive" id="btn-cancel-schedule" style="flex: 1; display: none;">
+                  Cancel Schedule
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: PREFERENCES & SETTINGS -->
+      <div class="tab-view" id="tab-settings">
+        <div style="width: 100%; max-width: 740px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px;">
+          <div class="pro-card">
+            <div class="card-header-flex">
+              <span class="card-title-text" style="font-size: 1.1rem;">Engine Preferences & Defaults</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 18px; margin-top: 10px;">
+              <div class="encoder-item">
+                <label class="encoder-label">Custom FFmpeg Binary Path (Optional)</label>
+                <input type="text" class="cyber-input" id="cfg-custom-ffmpeg" placeholder="Leave empty to use System FFmpeg (Auto-detected)">
+              </div>
+
+              <div class="encoder-item">
+                <label class="encoder-label">Audio Fidelity (AAC)</label>
+                <select class="cyber-input" id="cfg-audio-bitrate">
+                  <option value="128k">128 kbps (Standard Voice / Speech)</option>
+                  <option value="192k" selected>192 kbps (High Definition Studio Sound)</option>
+                  <option value="320k">320 kbps (Audiophile / Music Quality)</option>
+                </select>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--border-subtle);">
+                <div>
+                  <div style="font-size: 0.9rem; font-weight: 700; color: #fff;">Infinite Seamless Loop (24/7 Mode)</div>
+                  <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">When the video file ends, instantly replay from frame zero with 0 dropped frames.</div>
+                </div>
+                <label class="pro-switch">
+                  <input type="checkbox" id="cfg-infinite-loop" checked>
+                  <span class="pro-slider"></span>
+                </label>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--border-subtle);">
+                <div>
+                  <div style="font-size: 0.9rem; font-weight: 700; color: #fff;">Smart Auto-Reconnect (Network Resilience)</div>
+                  <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">If your ISP drops packets or RTMP disconnects, automatically retry in 5s.</div>
+                </div>
+                <label class="pro-switch">
+                  <input type="checkbox" id="cfg-auto-reconnect" checked>
+                  <span class="pro-slider"></span>
+                </label>
+              </div>
+
+              <div class="encoder-item" style="padding-top: 12px; border-top: 1px solid var(--border-subtle);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                  <label class="encoder-label">Cloud Auto-Updater & Version Controller</label>
+                  <span class="pro-badge" id="app-version-txt">v2.0.0</span>
+                </div>
+                <input type="text" class="cyber-input" id="cfg-update-gist" placeholder="Custom GitHub Gist Manifest URL (Optional)">
+                <div style="display: flex; gap: 10px; margin-top: 8px;">
+                  <button class="btn-golive" id="btn-manual-check-update" style="padding: 8px 18px; font-size: 0.8rem; flex: initial;">
+                    <span>🔄</span> Check for Updates Now
+                  </button>
+                </div>
+              </div>
+
+              <button class="btn-golive" id="btn-save-settings" style="flex: initial; margin-top: 6px;">
+                Save Studio Configuration
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Cloud Auto-Update Modal Dialog -->
+  <div class="modal-backdrop" id="update-modal" style="display: none;">
+    <div class="update-modal-card">
+      <!-- Header -->
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="modal-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.05rem; font-weight: 800; color: #fff;">Software Update Available</span>
+              <span class="pro-badge" style="color: #6ee7b7; border-color: rgba(110, 231, 183, 0.4);">NEW</span>
+            </div>
+            <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">A new version is ready to install</div>
+          </div>
+        </div>
+        <button class="btn-dismiss" id="btn-close-update-modal" title="Close">✕</button>
+      </div>
+
+      <!-- Version comparison -->
+      <div class="version-compare-row">
+        <div>
+          <div style="font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">INSTALLED</div>
+          <div style="font-size: 0.95rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #cbd5e1;" id="update-current-ver">v2.0.0</div>
+        </div>
+        <div style="color: var(--accent-primary); font-size: 1.2rem;">➔</div>
+        <div style="text-align: right;">
+          <div style="font-size: 0.68rem; font-weight: 700; color: var(--accent-primary); text-transform: uppercase;">LATEST RELEASE</div>
+          <div style="font-size: 0.95rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--accent-primary);" id="update-latest-ver">v2.0.1</div>
+        </div>
+      </div>
+
+      <!-- Changelog -->
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-size: 0.74rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+          <span>⚡</span> What's New in this Version
+        </div>
+        <div class="changelog-box" id="update-changelog-txt">Performance optimizations and bug fixes.</div>
+      </div>
+
+      <!-- Download Progress (shown while downloading) -->
+      <div id="update-progress-deck" style="display: none; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700;">
+          <span style="color: var(--accent-primary);" id="update-progress-status">Downloading update...</span>
+          <span style="font-family: 'JetBrains Mono', monospace; color: #fff;" id="update-progress-pct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="update-progress-bar" style="width: 0%;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+          <span id="update-progress-bytes">0.0 MB</span>
+          <span id="update-progress-speed">2.0 MB/s</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="modal-action-row" id="update-modal-actions">
+        <button class="btn-dismiss" id="btn-remind-later" style="width: auto; padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 0.84rem; flex: 1;">Remind Me Later</button>
+        <button class="btn-golive" id="btn-start-download-update" style="flex: 1.5; padding: 12px 22px; font-size: 0.88rem;">Download & Install</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

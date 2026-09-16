@@ -1,0 +1,66 @@
+{
+  "name": "streamxpert",
+  "version": "2.0.0",
+  "description": "StreamXpert Professional Live Streaming Studio by Shahzaib Jutt",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack:exe": "electron-builder --win"
+  },
+  "keywords": [
+    "streaming",
+    "ffmpeg",
+    "rtmp",
+    "youtube",
+    "facebook",
+    "tiktok",
+    "live"
+  ],
+  "author": "Shahzaib Jutt",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^31.3.1",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "axios": "^1.20.0"
+  },
+  "build": {
+    "appId": "com.shahzaibjutt.streamxpert",
+    "productName": "StreamXpert Studio",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "build/icon.ico",
+      "build/icon.png",
+      "main.js",
+      "preload.js",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "StreamXpert Studio",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "artifactName": "StreamXpert_Setup_v${version}.${ext}",
+      "runAfterFinish": true
+    }
+  }
+}
