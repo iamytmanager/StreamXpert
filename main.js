@@ -121,12 +121,9 @@ function createWindow() {
   }, 2500);
 
   mainWindow.on('closed', () => {
-    // Terminate all streaming child processes
-    for (const [id, stream] of activeStreams.entries()) {
-      stopStreamProcess(id);
-    }
-    clearInterval(statsInterval);
+    cleanupAllProcesses();
     mainWindow = null;
+    app.quit();
   });
 }
 
@@ -387,6 +384,28 @@ function stopStreamProcess(streamId) {
   return { success: true };
 }
 
+function cleanupAllProcesses() {
+  if (statsInterval) {
+    clearInterval(statsInterval);
+    statsInterval = null;
+  }
+  for (const [id, stream] of activeStreams.entries()) {
+    try {
+      if (stream.reconnectTimeout) clearTimeout(stream.reconnectTimeout);
+      if (stream.process && stream.process.pid) {
+        if (process.platform === 'win32') {
+          spawn('taskkill', ['/pid', String(stream.process.pid), '/f', '/t']);
+        } else {
+          stream.process.kill('SIGKILL');
+        }
+      }
+    } catch (e) {
+      console.error('Error stopping stream process on cleanup:', e);
+    }
+  }
+  activeStreams.clear();
+}
+
 // IPC Handlers
 ipcMain.handle('dialog:select-video', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
@@ -449,6 +468,17 @@ ipcMain.on('window:maximize', () => {
     if (mainWindow.isMaximized()) mainWindow.unmaximize();
     else mainWindow.maximize();
   }
+});
+
+ipcMain.on('window:close', () => {
+  cleanupAllProcesses();
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.destroy();
+  }
+  app.quit();
+  setTimeout(() => {
+    process.exit(0);
+  }, 200);
 });
 
 // ── 🌐 CLOUD AUTO-UPDATER & VERSION CONTROL ─────────────────────────────
@@ -616,8 +646,18 @@ ipcMain.handle('app:download-update', async (event, updateInfo) => {
 // App Lifecycle
 app.whenReady().then(createWindow);
 
+app.on('before-quit', () => {
+  cleanupAllProcesses();
+});
+
+app.on('will-quit', () => {
+  cleanupAllProcesses();
+});
+
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  cleanupAllProcesses();
+  app.quit();
+  setTimeout(() => {
+    process.exit(0);
+  }, 200);
 });

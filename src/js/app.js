@@ -16,7 +16,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (btnWinMin) btnWinMin.addEventListener('click', () => window.api.minimizeWindow());
   if (btnWinMax) btnWinMax.addEventListener('click', () => window.api.maximizeWindow());
-  if (btnWinClose) btnWinClose.addEventListener('click', () => window.api.closeWindow());
+  if (btnWinClose) {
+    btnWinClose.addEventListener('click', () => {
+      if (window.api && typeof window.api.closeWindow === 'function') {
+        window.api.closeWindow();
+      } else {
+        window.close();
+      }
+    });
+  }
 
   // Navigation Items & Tab Views
   const navItems = document.querySelectorAll('.nav-item');
